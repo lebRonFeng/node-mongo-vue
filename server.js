@@ -6,6 +6,7 @@ app = express();
 
 // 引入js
 const users = require('./routes/api/users');
+const profiles = require('./routes/api/profiles');
 
 mongoose.set('strictQuery', false);
 const db = require('./config/keys').mongoURI;
@@ -24,6 +25,8 @@ app.use(bodyParser.urlencoded({
     extended: false
 }));
 app.use("/api/users", users);
+app.use("/api/profiles", profiles);
+
 const port = process.env.PORT || 5002;
 
 app.listen(port, () => {
