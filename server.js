@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const passport = require('passport');
 app = express();
 
+
 // 引入js
 const users = require('./routes/api/users');
 const profiles = require('./routes/api/profiles');
@@ -27,7 +28,7 @@ app.use(bodyParser.urlencoded({
 app.use("/api/users", users);
 app.use("/api/profiles", profiles);
 
-const port = process.env.PORT || 5002;
+const port = process.env.PORT || 5000;
 
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);

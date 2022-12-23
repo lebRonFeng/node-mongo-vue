@@ -19,8 +19,6 @@ const passport = require('passport');
 // @desc 返回json数据
 // @access public
 router.post("/register", (req,res) => {
-    // console.log(req.body);
-
     // 查询数据库中是否拥有邮箱
     User.findOne({email:req.body.email})
         .then((user) => {
@@ -28,8 +26,6 @@ router.post("/register", (req,res) => {
                 return res.status(400).json("邮箱已被注册")
             } else {
                 const reqBody = req.body;
-                // const avatar = gravatar.url(reqBody.email, {s: '200', r: 'pg', d: 'mm'});
-
                 const newUser = new User({
                     name: reqBody.name,
                     email: reqBody.email,
@@ -37,7 +33,6 @@ router.post("/register", (req,res) => {
                     password: reqBody.password,
                     identity: reqBody.identity
                 })
-
                 bcrypt.genSalt(10, (err, salt) => {
                     bcrypt.hash(newUser.password, salt, (err, hash) => {
                         if(err) throw err;
@@ -48,42 +43,49 @@ router.post("/register", (req,res) => {
                     });
                 });
             }
-
-
         })
 })
+
+
 
 // $route POST api/users/login
 // @desc 返回token jwt passport
 // @access public
-router.post('/login',(req,res) => {
+router.post('/login', (req,res) => {
     const email = req.body.email;
     const password = req.body.password;
+    // 查询数据库
     User.findOne({email})
         .then(user => {
             if(!user){
-                return res.status(404).json('用户不存在！')
+                return res.status(404).json("用户不存在！")
             }
+
             // 密码匹配
             bcrypt.compare(password, user.password)
-                .then(isMatch => {
-                    if(isMatch){
-                        // res.json({msg:"success"})
-                        const rule = {id:user.id,name:user.name,identity:user.identity}
-                        // jwt.sign('规则', '加密名字','过期时间','箭头函数');
-                        jwt.sign(rule, keys.secretOrKey,{expiresIn: 3600},(err, token) => {
-                            if(err) throw err;
-                            res.json({
-                                success:true,
-                                token:'Bearer '+ token
-                            });
-                        });
-                    } else {
-                        return res.status(404).json("密码错误")
-                    }
-                })
+                    .then(isMatch => {
+                        if(isMatch){
+                            const rule = {
+                                id: user.id, 
+                                name:user.name,
+                                avatar:user.avatar,
+                                identity:user.identity,
+                            };
+                            jwt.sign(rule, keys.secretOrKey,{expiresIn: 3600},(err,token) => {
+                                if(err) throw err;
+                                res.json({
+                                    success: true,
+                                    token: "Bearer " + token
+                                })
+                            })
+                            // res.json({msg:"success"});
+                        } else{
+                            return res.status(400).json('密码错误！')
+                        }
+                    })
         })
 })
+
 
 // $route GET api/users/current
 // @desc 返回 current user
