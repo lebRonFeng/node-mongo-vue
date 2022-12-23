@@ -6,12 +6,10 @@ import Login from './views/Login'
 import Notfound from './views/404'
 
 Vue.use(Router)
-
-export default new Router({
+const router = new Router({
   mode: 'history',
   base: process.env.BASE_URL,
-  routes: [
-    {
+  routes: [{
       path: '/',
       redirect: '/index',
     },
@@ -37,3 +35,13 @@ export default new Router({
     },
   ]
 })
+// 路由守卫
+router.beforeEach((to, from, next) => {
+  const isLogin = localStorage.eleToken ? true : false;
+  if(to.path === '/login' || to.path === '/register'){
+    next();
+  } else {
+    isLogin ? next() : next('/login');
+  }
+})
+export default router
