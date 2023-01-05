@@ -64,7 +64,8 @@ export default {
         }
     },
     showInfoList(){
-        console.log('个人信息')
+        // console.log('个人信息')
+        this.$router.push('/infoshow');
     },
     logout(){
         // 清除tolken
