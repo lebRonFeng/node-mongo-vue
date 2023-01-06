@@ -2,22 +2,32 @@
   <div class="index">
     <HeadNav></HeadNav>
     <LeftMenu></LeftMenu>
-    <router-view></router-view>
+    <div class="rightContainer">
+      <router-view></router-view>
+    </div>
   </div>
 </template>
 
 <script>
-import HeadNav from '../components/HeadNav.vue'
-import LeftMenu from '../components/LeftMenu.vue'
+import HeadNav from "../components/HeadNav.vue";
+import LeftMenu from "../components/LeftMenu.vue";
 export default {
-    name: "index",
-    components: {HeadNav, LeftMenu}
-}
+  name: "index",
+  components: { HeadNav, LeftMenu },
+};
 </script>
 <style scoped>
-.index{
+.index {
   width: 100%;
   height: 100%;
   overflow: hidden;
+}
+.rightContainer{
+  position: relative;
+  top: 0;
+  left: 200px;
+  overflow: auto;
+  width: calc(100% - 200px);
+  height: calc(100% - 71px);
 }
 </style>
