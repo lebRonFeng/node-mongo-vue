@@ -1,11 +1,13 @@
 <template>
   <div class="fillontainer">
     <div>
-        <el-form :inline="true" ref="add_data">
-            <el-form-item class="btnRight">
-                <el-button type="primary" size="small" @click="handleAdd()">添加</el-button>
-            </el-form-item>
-        </el-form>
+      <el-form :inline="true" ref="add_data">
+        <el-form-item class="btnRight">
+          <el-button type="primary" size="small" @click="handleAdd()"
+            >添加</el-button
+          >
+        </el-form-item>
+      </el-form>
     </div>
     <el-table
       v-if="tableData.length > 0"
@@ -68,24 +70,35 @@
         </template>
       </el-table-column>
     </el-table>
-    <Dialog :dialog="dialog" @update="getProfile"></Dialog>
+    <Dialog :dialog="dialog" :formData="formData" @update="getProfile"></Dialog>
   </div>
 </template>
 
 <script>
-import Dialog from '../components/Dialog.vue'
+import Dialog from "../components/Dialog.vue";
 export default {
   name: "fundList",
   data() {
     return {
       tableData: [],
+      formData: {
+        type: "",
+        describe: "",
+        income: "",
+        expend: "",
+        cash: "",
+        remark: "",
+        id: "",
+      },
       dialog: {
-        show: false
-      }
+        show: false,
+        title: "",
+        option: "edit",
+      },
     };
   },
   components: {
-    Dialog
+    Dialog,
   },
   created() {
     this.getProfile();
@@ -102,21 +115,60 @@ export default {
           console.log(err);
         });
     },
-    handleEdit(index, row){
+    handleEdit(index, row) {
+      // 编辑
+      this.dialog = {
+        show: true,
+        title: "修改资金信息",
+        option: "edit",
+      };
+      this.formData = {
+        type: row.type,
+        describe: row.describe,
+        income: row.income,
+        expend: row.expend,
+        cash: row.cash,
+        remark: row.remark,
+        id: row._id,
+      };
+    },
+    handleDelete(index, row) {
+      this.$axios
+        .delete(`/api/profiles/delete/${row._id}`)
+        .then((res) => {
+          this.$message({
+            message: "删除成功！",
+            type: "success",
+          });
+          this.getProfile();
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    },
+    handleAdd() {
+      this.dialog = {
+        show: true,
+        title: "添加资金信息",
+        option: "add",
+      };
 
+      this.formData = {
+        type: "",
+        describe: "",
+        income: "",
+        expend: "",
+        cash: "",
+        remark: "",
+        id: "",
+      };
     },
-    handleDelete(index, row){
-        
-    },
-    handleAdd(){
-        this.dialog.show = true;
-    }
   },
 };
 </script>
 
 <style scoped>
-.btnRight{
-    float: right;
+.btnRight {
+  float: right;
 }
 </style>

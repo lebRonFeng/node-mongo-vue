@@ -1,7 +1,7 @@
 <template>
   <div class="dialog">
     <el-dialog
-      title="添加资金信息"
+      :title="dialog.title"
       :visible="dialog.show"
       :close-on-click-modal="false"
       :close-on-press-escape="false"
@@ -53,18 +53,9 @@
 
 <script>
 export default {
-  name: "dialog",
+  name: "dialogs",
   data() {
     return {
-      formData: {
-        type: "",
-        describe: "",
-        income: "",
-        expend: "",
-        cash: "",
-        remark: "",
-        id: "",
-      },
       format_type_list: [
         "提现",
         "提现手续费",
@@ -91,15 +82,18 @@ export default {
   },
   props: {
     dialog: Object,
+    formData: Object
   },
   methods:{
     onSubmit(form){
         this.$refs[form].validate(valid => {
             if(valid){
-                this.$axios.post("/api/profiles/add",   `type=${this.formData.type}&describe=${this.formData.describe}&income=${this.formData.income}&expend=${this.formData.expend}&cash=${this.formData.cash}&remark=${this.formData.remark}`)
+                const url= this.dialog.option == "add" ? "add": `edit/${this.formData.id}`
+                this.$axios.post(`/api/profiles/${url}`,   `type=${this.formData.type}&describe=${this.formData.describe}&income=${this.formData.income}&expend=${this.formData.expend}&cash=${this.formData.cash}&remark=${this.formData.remark}`)
                     .then(res => {
+                        const mes = this.dialog.option == "add" ? "添加" : "编辑"
                         this.$message({
-                            message: '数据添加成功',
+                            message: `数据${mes}成功`,
                             type: 'success'
                         });
                         // 隐藏dialog
