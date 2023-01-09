@@ -7,12 +7,13 @@ import {Message} from 'element-ui';
 
 import router from './router'
 import store from './store'
-
+import qs from 'qs'
 
 Vue.config.productionTip = false
 Vue.use(ElementUI);
 Vue.prototype.$axios = axios;
 Vue.prototype.$message = Message;
+Vue.use(qs)
 
 new Vue({
   router,

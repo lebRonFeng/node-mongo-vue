@@ -19,7 +19,7 @@ const mutations = {
     if(isAuthenticated){
       state.isAuthenticated = isAuthenticated;
     } else {
-      tate.isAuthenticated = false;
+      state.isAuthenticated = false;
     }
   },
 

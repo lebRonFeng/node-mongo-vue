@@ -45,6 +45,7 @@
 
 <script>
 import jwt_decode from 'jwt-decode';
+import qs from 'qs';
 export default {
   name: "login",
   components: {},
@@ -83,11 +84,10 @@ export default {
     submitForm(formName) {
       this.$refs[formName].validate(valid => {
       if(valid) {
+        let data = qs.stringify(this.loginUser)
       this.$axios
         .post(
-          "/api/users/login",
-          `email=${this.loginUser.email}&password=${this.loginUser.password}`
-        )
+          "/api/users/login", data)
         .then((res) => {
           // 登录成功
           this.$message({

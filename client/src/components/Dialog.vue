@@ -52,6 +52,7 @@
 </template>
 
 <script>
+import qs from 'qs';
 export default {
   name: "dialogs",
   data() {
@@ -89,7 +90,12 @@ export default {
         this.$refs[form].validate(valid => {
             if(valid){
                 const url= this.dialog.option == "add" ? "add": `edit/${this.formData.id}`
-                this.$axios.post(`/api/profiles/${url}`,   `type=${this.formData.type}&describe=${this.formData.describe}&income=${this.formData.income}&expend=${this.formData.expend}&cash=${this.formData.cash}&remark=${this.formData.remark}`)
+                /**
+                 * 如果没有qs序列化，就需要这么拼接
+                 * `type=${this.formData.type}&describe=${this.formData.describe}&income=${this.formData.income}&expend=${this.formData.expend}&cash=${this.formData.cash}&remark=${this.formData.remark}`
+                 */
+                let data = qs.stringify(this.formData)
+                this.$axios.post(`/api/profiles/${url}`, data)
                     .then(res => {
                         const mes = this.dialog.option == "add" ? "添加" : "编辑"
                         this.$message({

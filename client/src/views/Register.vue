@@ -64,6 +64,7 @@
 </template>
 
 <script>
+import qs from 'qs';
 export default {
   name: "register",
   components: {},
@@ -142,12 +143,14 @@ export default {
   methods: {
     submitForm(formName) {
       this.$refs[formName].validate(valid => {
+        let data = qs.stringify(this.registerUser);
+        /**
+         *  `email=${this.registerUser.email}&identity=${this.registerUser.identity}&name=${this.registerUser.name}&password=${this.registerUser.password}&password2=${this.registerUser.password2}`
+         */
       if(valid) {
       this.$axios
         .post(
-          "/api/users/register",
-          `email=${this.registerUser.email}&identity=${this.registerUser.identity}&name=${this.registerUser.name}&password=${this.registerUser.password}&password2=${this.registerUser.password2}`
-        )
+          "/api/users/register", data)
         .then((res) => {
           this.$router.push('/login');
           // 注册成功
