@@ -1,9 +1,34 @@
 <template>
   <div class="fillContainer">
     <div>
-      <el-form :inline="true" ref="add_data">
+      <el-form :inline="true" ref="add_data" :model="search_data">
+        <!-- 筛选 -->
+        <el-form-item label="按照时间筛选:">
+          <el-date-picker
+            v-model="search_data.startTime"
+            type="datetime"
+            placeholder="选择开始时间"
+          >
+          </el-date-picker>
+          <span> -- </span>
+          <el-date-picker
+            v-model="search_data.endTime"
+            type="datetime"
+            placeholder="选择结束时间"
+          >
+          </el-date-picker>
+        </el-form-item>
+        <el-form-item>
+          <el-button
+            type="primary"
+            icon="search"
+            size="small"
+            @click="handleSearch()"
+            >筛选</el-button
+          >
+        </el-form-item>
         <el-form-item class="btnRight">
-          <el-button type="primary" size="small" @click="handleAdd()"
+          <el-button type="primary" v-if="user.identity == 'manager'" size="small" @click="handleAdd()"
             >添加</el-button
           >
         </el-form-item>
@@ -46,6 +71,7 @@
       <el-table-column prop="remark" label="备注" align="center">
       </el-table-column>
       <el-table-column
+        v-if="user.identity == 'manager'"
         label="操作"
         width="180"
         align="center"
@@ -57,6 +83,7 @@
             size="small"
             type="warning"
             icon="el-icon-edit"
+            v-if="user.identity == 'manager'"
             @click="handleEdit(scope.$index, scope.row)"
             >编辑</el-button
           >
@@ -64,6 +91,7 @@
             size="small"
             type="danger"
             icon="el-icon-delete"
+            v-if="user.identity == 'manager'"
             @click="handleDelete(scope.$index, scope.row)"
             >删除</el-button
           >
@@ -98,14 +126,18 @@ export default {
   name: "fundList",
   data() {
     return {
-        paginations:{
-            page_index: 1, // 当前位于哪页
-            total: 0, // 总数
-            page_size:5, // 一页显示多少条
-            page_sizes: ['5','10','15','20'], // 每页显示多少条
-            layout: "total, sizes, prev, pager, next, jumper" //翻页属性
-
-        },
+      search_data: {
+        startTime: "",
+        endTime: "",
+      },
+      filterTableData: [],
+      paginations: {
+        page_index: 1, // 当前位于哪页
+        total: 0, // 总数
+        page_size: 5, // 一页显示多少条
+        page_sizes: ["5", "10", "15", "20"], // 每页显示多少条
+        layout: "total, sizes, prev, pager, next, jumper", //翻页属性
+      },
       tableData: [],
       allTableData: [],
       formData: {
@@ -124,6 +156,11 @@ export default {
       },
     };
   },
+  computed:{
+    user(){
+        return this.$store.getters.user;
+    }
+  },
   components: {
     Dialog,
   },
@@ -137,22 +174,23 @@ export default {
         .get("/api/profiles")
         .then((res) => {
           this.allTableData = res.data;
-        //   设置分页数据
-        this.setPaginations();
+          this.filterTableData = res.data;
+          //   设置分页数据
+          this.setPaginations();
         })
         .catch((err) => {
           console.log(err);
         });
     },
-    setPaginations(){
-        // 分页属性设置
-        this.paginations.total = this.allTableData.length;
-        this.paginations.page_index = 1;
-        this.paginations.page_size = 5;
-        // 设置默认的分页数据
-        this.tableData = this.allTableData.filter((item, index) => {
-            return index < this.paginations.page_size;
-        })
+    setPaginations() {
+      // 分页属性设置
+      this.paginations.total = this.allTableData.length;
+      this.paginations.page_index = 1;
+      this.paginations.page_size = 5;
+      // 设置默认的分页数据
+      this.tableData = this.allTableData.filter((item, index) => {
+        return index < this.paginations.page_size;
+      });
     },
     handleEdit(index, row) {
       // 编辑
@@ -202,45 +240,67 @@ export default {
         id: "",
       };
     },
-    handleSizeChange(page_size){
-        // page_size一页展示多少条
-        this.paginations.page_index = 1;
-        this.paginations.page_size = page_size;
-        this.tableData = this.allTableData.filter((item, index) => {
-            return index < page_size;
-        })
+    handleSizeChange(page_size) {
+      // page_size一页展示多少条
+      this.paginations.page_index = 1;
+      this.paginations.page_size = page_size;
+      this.tableData = this.allTableData.filter((item, index) => {
+        return index < page_size;
+      });
     },
-    handleCurrentChange(page){
-        // 获取当前页
-        let index = this.paginations.page_size * (page -1);
-        // 数据总数
-        let nums = this.paginations.page_size * page;
-        // 容器
-        let tables = [];
-        for(let i = index; i< nums; i++){
-            if(this.allTableData[i]){
-                tables.push(this.allTableData[i]);
-            }
-            this.tableData = tables;
+    handleCurrentChange(page) {
+      // 获取当前页
+      let index = this.paginations.page_size * (page - 1);
+      // 数据总数
+      let nums = this.paginations.page_size * page;
+      // 容器
+      let tables = [];
+      for (let i = index; i < nums; i++) {
+        if (this.allTableData[i]) {
+          tables.push(this.allTableData[i]);
         }
+        this.tableData = tables;
+      }
+    },
+    handleSearch(){
+        // 筛选
+        if(!this.search_data.startTime || !this.search_data.endTime){
+            this.$message({
+                type: 'warning',
+                message: '请选择时间区间'
+            });
+            this.getProfile();
+            return;
+        }
+
+        const sTime = this.search_data.startTime.getTime();
+        const eTime = this.search_data.endTime.getTime();
+        this.allTableData = this.filterTableData.filter(item => {
+            let date = new Date(item.date);
+            let time = date.getTime();
+            return time >= sTime && time <= eTime;
+        })
+
+        // 分页数据
+        this.setPaginations();
     }
   },
 };
 </script>
 
 <style scoped>
-.fillContainer{
-    width: 100%;
-    height: 100%;
-    padding: 16px;
-    box-sizing: border-box;
+.fillContainer {
+  width: 100%;
+  height: 100%;
+  padding: 16px;
+  box-sizing: border-box;
 }
 .btnRight {
   float: right;
 }
 
-.pagination{
-    text-align: right;
-    margin-top: 20px;
+.pagination {
+  text-align: right;
+  margin-top: 20px;
 }
 </style>
